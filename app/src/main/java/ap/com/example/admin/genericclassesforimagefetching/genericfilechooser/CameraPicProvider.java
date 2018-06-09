@@ -103,6 +103,7 @@ public class CameraPicProvider {
      * @param listener   listener for getting the bitmap image and the file path
      *                   </p>
      */
+
     public CameraPicProvider(Context context, boolean wantToCrop, GetBitmapListener listener) {
         this.context = context;
         this.listener = listener;
@@ -110,10 +111,6 @@ public class CameraPicProvider {
         openPermissionAndResultReciver();
     }
 
-
-    /**
-     *
-     */
     private void openPermissionAndResultReciver() {
         Intent intent = new Intent(context, PermissionAndResultReciverActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -130,6 +127,7 @@ public class CameraPicProvider {
      * it fetches the image bitmap internally and callback to the listener
      * </p>
      */
+
     public static class PermissionAndResultReciverActivity extends AppCompatActivity {
         public static final int SELECT_FILE = 0;
         private static final int REQUEST_FOR_EXTERNAL_STORAGE = 1001;
@@ -147,18 +145,18 @@ public class CameraPicProvider {
 
         public boolean requestPermissionForExternalStorage() {
             if (ContextCompat.checkSelfPermission(getApplicationContext(),
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
 // explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 //Toast.makeText(getApplicationContext(), "External storage permission is mandatory",Toast.LENGTH_LONG).show();
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             REQUEST_FOR_EXTERNAL_STORAGE);
                 } else {
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                            new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                             REQUEST_FOR_EXTERNAL_STORAGE);
                 }
                 return true;
@@ -174,14 +172,14 @@ public class CameraPicProvider {
                     != PackageManager.PERMISSION_GRANTED) {
 // explanation?
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.CAMERA)) {
+                        android.Manifest.permission.CAMERA)) {
 //Toast.makeText(getApplicationContext(), "External storage permission is mandatory",Toast.LENGTH_LONG).show();
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.CAMERA},
+                            new String[]{android.Manifest.permission.CAMERA},
                             REQUEST_FOR_CAMERA);
                 } else {
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.CAMERA},
+                            new String[]{android.Manifest.permission.CAMERA},
                             REQUEST_FOR_CAMERA);
                 }
                 return true;
@@ -191,22 +189,20 @@ public class CameraPicProvider {
             }
         }
 
-
-        /**
-         * Opens the camera
-         */
         private void cameraIntent() {
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
             //for nougat
             if (Build.VERSION.SDK_INT >= 24) {
                 File nFile = getFile();
-                file = FileProvider.getUriForFile(this, getPackageName() + ".provider", nFile);
+                file = FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".provider", nFile);
             } else {
                 //getting uri of the file
                 file = Uri.fromFile(getFile());
             }
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, file);
+            intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, file);
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intent, REQUEST_CAMERA);
             } else {
@@ -303,7 +299,7 @@ public class CameraPicProvider {
                     listener.onGetBitmap(bitmapImage, mCurrentPhotoPath);
                     finish();
                 } else {
-                    showImageCroperActivity(data);
+                    showImageCroperActivity();
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -313,27 +309,13 @@ public class CameraPicProvider {
 
         }
 
-        /**
-         * Opens the ImageCropper activity and after the cropping success,it callback to {@link #onActivityResult(int, int, Intent)}
-         *
-         * @param data the image data
-         */
-        private void showImageCroperActivity(Intent data) {
-            if (data != null) {
-                try {
-                    Uri selectedImage = data.getData();
-                    bitmapImage = MediaStore.Images.Media.getBitmap(getContentResolver(), selectedImage);
-                    CropImage.activity(selectedImage)
-                            .setCropShape(CropImageView.CropShape.OVAL)
-                            .setActivityMenuIconColor(getResources().getColor(R.color.colorWhite))
-                            .setBorderCornerColor(getResources().getColor(R.color.colorAccent))
-                            .setGuidelines(CropImageView.Guidelines.ON)
-                            .start(this);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
+        private void showImageCroperActivity() {
+            CropImage.activity(file)
+                    .setCropShape(CropImageView.CropShape.OVAL)
+                    .setActivityMenuIconColor(getResources().getColor(R.color.colorWhite))
+                    .setBorderCornerColor(getResources().getColor(R.color.colorAccent))
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .start(this);
         }
 
         private void getImageFromCropActivity(CropImage.ActivityResult result) {
@@ -357,12 +339,9 @@ public class CameraPicProvider {
     }
 
 
-    /**
-     * The callback listener for getting the bitmap to the host activity
-     */
     public interface GetBitmapListener {
+
         void onGetBitmap(Bitmap bitmapImage, String filepath);
     }
-
 
 }
